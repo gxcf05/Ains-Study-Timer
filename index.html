@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ain's Study Zone</title>
+
+    <!-- Include ARIMO font -->
+    <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Arimo', sans-serif;
+            color: rgb(213, 143, 189);
+            background-color: rgb(254, 228, 242);
+        }
+
+        .container {
+            display: flex;
+            align-items: center; /* vertically center block1 */
+            justify-content: space-between; /* push star to the right */
+            width: 100%;
+        }
+
+        .block1 {
+            width: 700px;
+            margin-left: 60px;
+        }
+
+        .block2 {
+            width: 700px;
+            text-align: right; /* align star inside its block */
+        }
+
+        .Header {
+            font-size: 100px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        hr {
+            border: none;
+            height: 3px;
+            background-color: rgb(213, 143, 189);
+            width: 100%;
+            margin-left:0 ;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            font-family: 'Arimo', sans-serif;
+            padding:10px;
+            border-radius: 30px;
+            color: rgb(213, 143, 189);
+            border-color:rgb(213, 143, 189);
+            border-style: solid;
+            cursor: pointer;
+            background-color: rgb(254, 228, 242);
+            transition: background-color 0.15s;
+        }
+        button:hover {
+            background-color: rgb(213, 143, 189);
+            color: rgb(254, 228, 242)
+        }
+
+        .Input {
+            border-radius: 30px;
+            width: 300px;
+            height: 30px;
+            color: rgb(213, 143, 189);
+            border-style: solid;
+            border-color: rgb(213, 143, 189);
+            background-color: rgb(254, 228, 242)
+        }
+
+        ::placeholder {
+            color: rgb(213, 143, 189)
+        }
+
+        .star {
+            width: 580px;
+        }
+
+        .small-btn {
+            padding: 5px;
+        }
+
+        #itemList li {
+            margin-bottom: 8px;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="block1">
+        <h2 class="Header" >AINSLIE'S <br> STUDY TIMER</h2>
+        <hr>
+        <div>
+            <input class="Input" type="text" id="itemInput" placeholder="Add a task...">
+            <button class="Add" onclick="addItem()">ADD</button>
+            <button class="Done" onclick="done()">DONE</button>
+        </div>
+        <ul id="itemList"></ul>
+    </div>
+
+    <div class="block2">
+        <img class="star" src="Images/Stars.jpg">
+    </div>
+
+</div>
+
+
+<script>
+    let items = [];
+
+    document.getElementById("itemInput").addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addItem();
+        }
+    });
+
+    function addItem() {
+        const input = document.getElementById("itemInput");
+        const value = input.value.trim();
+
+        if (value !== "") {
+            items.push(value);
+            input.value = "";
+            updateList();
+        }
+    }
+
+    function updateList() {
+        const list = document.getElementById("itemList");
+        list.innerHTML = "";
+
+        items.forEach((item, index) => {
+            const li = document.createElement("li");
+
+            const span = document.createElement("span");
+            span.textContent = item;
+
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.className = "small-btn";
+            editBtn.style.marginLeft = "10px";
+            editBtn.onclick = () => editItem(index);
+
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "Delete";
+            delBtn.className = "small-btn";
+            delBtn.style.marginLeft = "5px";
+            delBtn.onclick = () => deleteItem(index);
+
+            li.appendChild(span);
+            li.appendChild(editBtn);
+            li.appendChild(delBtn);
+            list.appendChild(li);
+        });
+    }
+
+    function editItem(index) {
+        const newText = prompt("Edit task:", items[index]);
+        if (newText === null) return;
+
+        const trimmed = newText.trim();
+        if (trimmed === "") return;
+
+        items[index] = trimmed;
+        updateList();
+    }
+
+    function deleteItem(index) {
+        items.splice(index, 1);
+        updateList();
+    }
+
+    function done() {
+        if (items.length === 0) {
+            alert("Please add at least one task!");
+            return;
+        }
+
+        localStorage.setItem("studyItems", JSON.stringify(items));
+        window.location.href = "page2.html";
+    }
+</script>
+
+</body>
+</html>

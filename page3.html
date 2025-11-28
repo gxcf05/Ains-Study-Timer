@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ain's Study Zone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arimo', sans-serif;
+            background-color: rgb(254, 228, 242);
+            color: rgb(213, 143, 189);
+            margin: 0;
+            padding: 40px 60px;
+        }
+
+        /* OUTER LAYOUT */
+        .page-container {
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* centers the circle column in the window */
+        .center-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ---- CIRCULAR TIMER ---- */
+
+        .timer-shell {
+            position: relative;
+            width: 420px;
+            height: 420px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .timer-svg {
+            position: absolute;
+            inset: 0;
+        }
+
+        .bg-ring {
+            fill: none;
+            stroke: rgba(213, 143, 189, 0.25);
+            stroke-width: 26;
+        }
+
+        .fg-ring {
+            fill: none;
+            stroke: rgb(213, 143, 189);
+            stroke-width: 26;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            stroke-dasharray: 603;
+            stroke-dashoffset: 603;
+            transition: stroke-dashoffset 0.15s linear;
+        }
+
+        .timer-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+
+        #timerDisplay {
+            font-size: 64px;
+            font-weight: 700;
+        }
+
+        #modeLabel {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .timer-buttons {
+            display: flex;
+            gap: 24px;
+        }
+
+        .divider-line {
+            width: 260px;
+            height: 2px;
+            background-color: rgb(213, 143, 189);
+            margin: 10px auto 24px auto;
+        }
+
+        #currentTaskLabel {
+            font-size: 20px;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        #currentTask {
+            font-size: 22px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .task-action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        button {
+            font-family: 'Arimo', sans-serif;
+            padding: 8px 24px;
+            border-radius: 30px;
+            color: rgb(213, 143, 189);
+            border-color: rgb(213, 143, 189);
+            border-style: solid;
+            cursor: pointer;
+            background-color: rgb(254, 228, 242);
+            transition: background-color 0.15s, color 0.15s;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: rgb(213, 143, 189);
+            color: rgb(254, 228, 242);
+        }
+
+        .small-btn {
+            padding: 4px 10px;
+            font-size: 14px;
+            border-radius: 20px;
+            border: 2px solid rgb(213, 143, 189);
+            background-color: rgb(254, 228, 242);
+            color: rgb(213, 143, 189);
+            cursor: pointer;
+        }
+
+        .small-btn:hover {
+            background-color: rgb(213, 143, 189);
+            color: rgb(254, 228, 242);
+        }
+
+        /* ---- RIGHT TASK PANEL ---- */
+
+        .tasks-panel {
+            position: absolute;
+            top: 40px;
+            right: 60px;
+            width: 260px;
+            padding-left: 20px;
+            border-left: 2px solid rgb(213, 143, 189);
+        }
+
+        .tasks-panel h3 {
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        #inProgressList,
+        #completedList {
+            list-style: none;
+            padding-left: 14px;
+            margin-top: 5px;
+            margin-bottom: 18px;
+            font-size: 16px;
+        }
+
+        #inProgressList li,
+        #completedList li {
+            margin-bottom: 6px;
+        }
+
+        .completed-task {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .sidebar-edit-btn {
+            margin-bottom: 12px;
+            padding: 6px 18px;
+            font-size: 14px;
+        }
+
+        /* ---- EDITOR (sidebar only) ---- */
+
+        #taskEditor {
+            margin-top: 8px;
+            padding: 8px;
+            border: 1px solid rgb(213, 143, 189);
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #taskEditor ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 6px;
+        }
+
+        #taskEditor li {
+            margin-bottom: 5px;
+        }
+
+        #taskEditor button {
+            margin-left: 5px;
+        }
+
+        #newTaskInput {
+            width: 100%;
+            padding: 6px 10px;
+            border-radius: 20px;
+            border: 1px solid rgb(213, 143, 189);
+            background-color: rgb(254, 228, 242);
+            color: rgb(213, 143, 189);
+            font-family: 'Arimo', sans-serif;
+            margin-bottom: 6px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-container">
+
+    <!-- centered timer column -->
+    <div class="center-wrapper">
+        <div class="main-panel">
+            <div id="modeLabel">Study Time</div>
+
+            <div class="timer-shell">
+                <svg class="timer-svg" viewBox="0 0 220 220">
+                    <circle class="bg-ring" cx="110" cy="110" r="96"></circle>
+                    <circle class="fg-ring" cx="110" cy="110" r="96"></circle>
+                </svg>
+
+                <div class="timer-content">
+                    <div id="timerDisplay">00:00</div>
+                    <div class="timer-buttons">
+                        <button onclick="startTimer()">START</button>
+                        <button onclick="pauseTimer()">PAUSE</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider-line"></div>
+
+            <div id="currentTaskLabel">Current task:</div>
+            <div id="currentTask">Loading task...</div>
+
+            <div class="task-action-buttons">
+                <button onclick="taskDone()">Task done</button>
+                <button onclick="skipTask()">Skip Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- right sidebar: lists + editor -->
+    <div class="tasks-panel">
+        <button class="sidebar-edit-btn" onclick="toggleEditor()">Edit tasks</button>
+
+        <h3>In Progress</h3>
+        <ul id="inProgressList"></ul>
+
+        <h3>Completed</h3>
+        <ul id="completedList"></ul>
+
+        <!-- editor limited to sidebar -->
+        <div id="taskEditor" style="display:none;">
+            <h3 style="margin-top:0; font-size:16px;">Edit Tasks</h3>
+            <input type="text" id="newTaskInput" placeholder="New task...">
+            <button class="small-btn" onclick="addNewTask()">Add</button>
+            <ul id="taskEditorList"></ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ----- TIMER STATE -----
+    let studyMinutes = parseInt(localStorage.getItem("studyLength") || "25", 10);
+    let breakMinutes = parseInt(localStorage.getItem("breakLength") || "5", 10);
+
+    let mode = "study";
+    let remainingSeconds = studyMinutes * 60;
+    let periodTotalSeconds = studyMinutes * 60;
+
+    let timerInterval = null;
+    let isRunning = false;
+
+    // ----- TASK DATA -----
+    let tasks = [];
+    let completedTasks = [];
+    let currentTask = null;
+
+    // ----- CIRCLE PROGRESS -----
+    const fgRing = document.querySelector(".fg-ring");
+    const RADIUS = 96;
+    const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+    fgRing.style.strokeDasharray = CIRCUMFERENCE;
+    fgRing.style.strokeDashoffset = CIRCUMFERENCE;
+
+    function updateProgressCircle() {
+        if (periodTotalSeconds <= 0) return;
+        const progress = (periodTotalSeconds - remainingSeconds) / periodTotalSeconds;
+        const clamped = Math.max(0, Math.min(progress, 1));
+        const offset = CIRCUMFERENCE * (1 - clamped);
+        fgRing.style.strokeDashoffset = offset;
+    }
+
+    // ----- NOTIFICATIONS -----
+    function sendNotification(title, body) {
+        if (!("Notification" in window)) return;
+        if (Notification.permission !== "granted") return;
+        new Notification(title, {
+            body: body,
+            icon: "Images/Stars.jpg" // optional, can change or remove
+        });
+    }
+
+    // ----- TIMER FUNCTIONS -----
+    function formatSeconds(seconds) {
+        let h = Math.floor(seconds / 3600);
+        let m = Math.floor((seconds % 3600) / 60);
+        let s = seconds % 60;
+
+        let mm = m < 10 ? "0" + m : m;
+        let ss = s < 10 ? "0" + s : s;
+
+        if (h > 0) {
+            return h + ":" + mm + ":" + ss;
+        } else {
+            return mm + ":" + ss;
+        }
+    }
+
+    function updateTimerDisplay() {
+        document.getElementById("timerDisplay").textContent =
+            formatSeconds(remainingSeconds);
+        updateProgressCircle();
+    }
+
+    function updateModeLabel() {
+        document.getElementById("modeLabel").textContent =
+            mode === "study" ? "Study Time" : "Break Time";
+    }
+
+    function startTimer() {
+        if (isRunning) return;
+
+        if (remainingSeconds <= 0) {
+            periodTotalSeconds = (mode === "study" ? studyMinutes : breakMinutes) * 60;
+            remainingSeconds = periodTotalSeconds;
+            updateTimerDisplay();
+        }
+
+        isRunning = true;
+        timerInterval = setInterval(() => {
+            if (remainingSeconds > 0) {
+                remainingSeconds--;
+                updateTimerDisplay();
+            } else {
+                handlePeriodEnd();
+            }
+        }, 1000);
+    }
+
+    function pauseTimer() {
+        clearInterval(timerInterval);
+        isRunning = false;
+    }
+
+    function handlePeriodEnd() {
+        pauseTimer();
+
+        if (mode === "study") {
+            if (breakMinutes) {
+                mode = "break";
+                periodTotalSeconds = breakMinutes * 60;
+                remainingSeconds = periodTotalSeconds;
+                updateModeLabel();
+                updateTimerDisplay();
+                alert("Study time is up! Break time.");
+                sendNotification("Study time is up!", "Take a break 😊");
+                startTimer();
+            } else if (!tasks.length) {
+                alert("Study complete & all tasks done! 🎉");
+                sendNotification("Study complete!", "All tasks are finished 🎉");
+            } else {
+                mode = "study";
+                periodTotalSeconds = studyMinutes * 60;
+                remainingSeconds = periodTotalSeconds;
+                updateTimerDisplay();
+                alert("Next study block starting!");
+                sendNotification("Next block starting", "New study block is starting.");
+                startTimer();
+            }
+        } else {
+            if (!tasks.length) {
+                alert("Done! All tasks completed 🎉");
+                sendNotification("All done!", "You finished all your tasks 🎉");
+            } else {
+                mode = "study";
+                periodTotalSeconds = studyMinutes * 60;
+                remainingSeconds = periodTotalSeconds;
+                updateModeLabel();
+                updateTimerDisplay();
+                alert("Break done! Back to studying.");
+                sendNotification("Break is done!", "Time to focus again ✨");
+                startTimer();
+            }
+        }
+    }
+
+    // ----- TASK LOGIC -----
+    function loadTasks() {
+        const stored = localStorage.getItem("studyItems");
+        tasks = stored ? JSON.parse(stored) : [];
+        if (!Array.isArray(tasks)) tasks = [];
+    }
+
+    function saveTasks() {
+        localStorage.setItem("studyItems", JSON.stringify(tasks));
+    }
+
+    function pickRandomTask() {
+        const taskDiv = document.getElementById("currentTask");
+
+        if (!tasks.length) {
+            currentTask = null;
+            taskDiv.textContent = "All tasks completed! 🎉";
+            return;
+        }
+
+        currentTask = tasks[Math.floor(Math.random() * tasks.length)];
+        taskDiv.textContent = currentTask.toUpperCase();
+    }
+
+    function taskDone() {
+        if (!currentTask) return;
+
+        const index = tasks.indexOf(currentTask);
+        if (index !== -1) {
+            const finished = tasks.splice(index, 1)[0];
+            completedTasks.push(finished);
+        }
+
+        saveTasks();
+        renderTaskLists();
+
+        if (!tasks.length) {
+            document.getElementById("currentTask").textContent =
+                "All tasks completed! 🎉";
+            currentTask = null;
+        } else {
+            pickRandomTask();
+        }
+    }
+
+    function skipTask() {
+        if (tasks.length <= 1) {
+            alert("You must finish the last task!");
+            return;
+        }
+        pickRandomTask();
+    }
+
+    // ----- RIGHT-SIDE LISTS -----
+    function renderTaskLists() {
+        const inList = document.getElementById("inProgressList");
+        const compList = document.getElementById("completedList");
+
+        inList.innerHTML = "";
+        compList.innerHTML = "";
+
+        tasks.forEach(task => {
+            const li = document.createElement("li");
+            li.textContent = task;
+            inList.appendChild(li);
+        });
+
+        completedTasks.forEach(task => {
+            const li = document.createElement("li");
+            li.textContent = task;
+            li.classList.add("completed-task");
+            compList.appendChild(li);
+        });
+    }
+
+    // ----- EDITOR (SIDEBAR) -----
+    function toggleEditor() {
+        const editor = document.getElementById("taskEditor");
+        if (editor.style.display === "none" || editor.style.display === "") {
+            renderTaskEditor();
+            editor.style.display = "block";
+        } else {
+            editor.style.display = "none";
+        }
+    }
+
+    function renderTaskEditor() {
+        const ul = document.getElementById("taskEditorList");
+        ul.innerHTML = "";
+
+        tasks.forEach((task, index) => {
+            const li = document.createElement("li");
+            const span = document.createElement("span");
+            span.textContent = task;
+
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.className = "small-btn";
+            editBtn.onclick = () => editTask(index);
+
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "Delete";
+            delBtn.className = "small-btn";
+            delBtn.onclick = () => deleteTask(index);
+
+            li.appendChild(span);
+            li.appendChild(editBtn);
+            li.appendChild(delBtn);
+            ul.appendChild(li);
+        });
+    }
+
+    function addNewTask() {
+        const input = document.getElementById("newTaskInput");
+        const value = input.value.trim();
+        if (!value) return;
+
+        tasks.push(value);
+        input.value = "";
+        saveTasks();
+        renderTaskEditor();
+        renderTaskLists();
+
+        if (!currentTask) pickRandomTask();
+    }
+
+    function editTask(index) {
+        const newText = prompt("Edit task:", tasks[index]);
+        if (!newText) return;
+
+        tasks[index] = newText.trim();
+        saveTasks();
+        renderTaskEditor();
+        renderTaskLists();
+        if (currentTask === tasks[index]) {
+            document.getElementById("currentTask").textContent = currentTask;
+        }
+    }
+
+    function deleteTask(index) {
+        const removed = tasks[index];
+        tasks.splice(index, 1);
+        saveTasks();
+        renderTaskEditor();
+        renderTaskLists();
+
+        if (currentTask === removed) pickRandomTask();
+    }
+
+    function closeEditor() {
+        document.getElementById("taskEditor").style.display = "none";
+    }
+
+    // ----- INIT -----
+    function init() {
+        updateModeLabel();
+        updateTimerDisplay();
+        loadTasks();
+
+        if (!tasks.length) {
+            document.getElementById("currentTask").textContent =
+                "No tasks found!";
+        } else {
+            pickRandomTask();
+        }
+
+        renderTaskLists();
+
+        // Ask for notification permission once on load
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+    }
+    init();
+
+    document.getElementById("newTaskInput").addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addNewTask();
+        }
+    });
+</script>
+
+</body>
+</html>
